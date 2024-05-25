@@ -1,6 +1,6 @@
 name: build
 
-on: ['push', 'workflow_dispatch']
+on: ['workflow_dispatch']
     
 jobs:
   linux:
@@ -34,11 +34,9 @@ jobs:
         fi
         
     - name: Build plugins
-      if: ${{ env.publish_tag }}
       run: make plugins
       
     - name: Pack plugins
-      if: ${{ env.publish_tag }}
       run: | 
         cd plugins
         mkdir plugins
@@ -53,14 +51,13 @@ jobs:
         7z a plugins_linux.zip plugins/*
         cd ../
 
-    - name: Publish release
-      if: ${{ env.publish_tag }}
-      uses: ncipollo/release-action@v1
+    - name: Upload files
+      uses: actions/upload-artifact@v2
       with:
-        allowUpdates: true
-        tag: ${{ env.publish_tag }}
-        artifacts: "bin/cod4x18_dedrun,plugins/plugins_linux.zip"
-        token: ${{ secrets.GITHUB_TOKEN }}
+        name: linux-files
+        path: |
+            bin/cod4x18_dedrun
+            plugins/plugins_linux.zip
       
   windows:
     name: Windows
@@ -108,7 +105,6 @@ jobs:
         }
         
     - name: Build plugins
-      if: ${{ env.publish_tag }}
       run: |
         $path = $env:Path
         $env:Path = "C:\mingw32\bin;"
@@ -116,7 +112,6 @@ jobs:
         mingw32-make plugins
       
     - name: Pack plugins
-      if: ${{ env.publish_tag }}
       run: | 
         cd plugins
         mkdir plugins
@@ -130,12 +125,11 @@ jobs:
         Copy-Item -Path legacybanlist/legacybanlist.dll -Destination plugins/
         7z a -y plugins_windows.zip plugins/*
         cd ../
-        
-    - name: Publish release
-      if: ${{ env.publish_tag }}
-      uses: ncipollo/release-action@v1
+
+    - name: Upload files
+      uses: actions/upload-artifact@v2
       with:
-        allowUpdates: true
-        tag: ${{ env.publish_tag }}
-        artifacts: "bin/cod4x18_dedrun.exe,plugins/plugins_windows.zip"
-        token: ${{ secrets.GITHUB_TOKEN }}
+        name: windows-files
+        path: |
+            bin/cod4x18_dedrun.exe
+            plugins/plugins_windows.zip
